@@ -28,7 +28,7 @@ void drawHome() {
   M5Cardputer.Display.setCursor(4, 54); M5Cardputer.Display.println("[2] BLE discovery");
   M5Cardputer.Display.setCursor(4, 69); M5Cardputer.Display.println("[3] About / limits");
   M5Cardputer.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
-  M5Cardputer.Display.setCursor(4, 99); M5Cardputer.Display.println("Esc: home");
+  M5Cardputer.Display.setCursor(4, 99); M5Cardputer.Display.println("Del: home");
   M5Cardputer.Display.setCursor(4, 116); M5Cardputer.Display.printf("STATUS: %s", statusLine.c_str());
 }
 void drawList(const char* title, String* lines, int count) {
@@ -41,7 +41,7 @@ void drawList(const char* title, String* lines, int count) {
   }
   if (!count) { M5Cardputer.Display.setCursor(4, 42); M5Cardputer.Display.println("No results recorded."); }
   M5Cardputer.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
-  M5Cardputer.Display.setCursor(4, 119); M5Cardputer.Display.println("Esc: home");
+  M5Cardputer.Display.setCursor(4, 119); M5Cardputer.Display.println("Del: home");
 }
 void scanWiFi() {
   screen = WIFI_RESULTS; statusLine = "SCANNING WIFI";
@@ -86,7 +86,7 @@ void drawAbout() {
   M5Cardputer.Display.setCursor(4, 50); M5Cardputer.Display.println("Discovery is not proof of a flaw.");
   M5Cardputer.Display.setCursor(4, 64); M5Cardputer.Display.println("No deauth, jamming, credential");
   M5Cardputer.Display.setCursor(4, 78); M5Cardputer.Display.println("capture, or device spam in v0.1.");
-  M5Cardputer.Display.setCursor(4, 119); M5Cardputer.Display.println("Esc: home");
+  M5Cardputer.Display.setCursor(4, 119); M5Cardputer.Display.println("Del: home");
 }
 void setup() {
   auto cfg = M5.config(); M5Cardputer.begin(cfg, true);
@@ -104,7 +104,7 @@ void loop() {
         else if (c == '3') { screen = ABOUT; drawAbout(); }
       }
     }
-    if (state.del || state.esc) { screen = HOME; drawHome(); }
+    if (state.del) { screen = HOME; drawHome(); }
   }
   delay(10);
 }
