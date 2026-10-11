@@ -1,0 +1,37 @@
+name: Build NIGHTSHADE firmware
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install PlatformIO
+        run: python -m pip install --upgrade platformio
+      - name: Compile firmware
+        run: pio run -e cardputer
+      - name: Package firmware
+        run: |
+          mkdir -p release
+          cp .pio/build/cardputer/firmware.bin release/NIGHTSHADE-v0.1-firmware.bin
+          cp .pio/build/cardputer/bootloader.bin release/bootloader.bin
+          cp .pio/build/cardputer/partitions.bin release/partitions.bin
+          cp .pio/build/cardputer/firmware.elf release/firmware.elf
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: NIGHTSHADE-v0.1-firmware
+          path: release/*
+          if-no-files-found: error
+          retention-days: 14
