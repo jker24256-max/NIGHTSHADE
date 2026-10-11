@@ -75,36 +75,34 @@ void scanWiFi() {
   drawList("WIFI DISCOVERY", wifiLines, wifiCount,
            n == 0 ? "No APs detected" : "Scan failed - retry");
 }
-class ScanCallbacks : public NimBLEScanCallbacks {
-  void onResult(const NimBLEAdvertisedDevice* device) override {
-    if (bleCount >= 12) return;
+void scanBLE() {
+  screen = BLE_RESULTS;
+  bleCount = 0;
+  statusLine = "SCANNING BLE";
+  drawList("BLE DISCOVERY", bleLines, 0, "Scanning for 5 sec...");
+
+  NimBLEScan* scan = NimBLEDevice::getScan();
+  scan->stop();
+  scan->clearResults();
+  scan->setActiveScan(true);
+  scan->setInterval(45);
+  scan->setWindow(15);
+
+  // Use the synchronous results API so we only read results after scanning finishes.
+  NimBLEScanResults results = scan->getResults(5000, false);
+  uint32_t total = results.getCount();
+  for (uint32_t i = 0; i < total && bleCount < 12; ++i) {
+    const NimBLEAdvertisedDevice* device = results.getDevice(i);
+    if (device == nullptr) continue;
     String name = device->haveName() ? String(device->getName().c_str()) : String("<unnamed>");
     if (name.length() > 10) name = name.substring(0, 10);
     String addr = String(device->getAddress().toString().c_str());
     String suffix = addr.substring(max(0, (int)addr.length() - 5));
     bleLines[bleCount++] = name + " " + suffix + " " + String(device->getRSSI());
   }
-};
-ScanCallbacks scanCallbacks;
-void scanBLE() {
-  screen = BLE_RESULTS;
-  bleCount = 0;
-  statusLine = "SCANNING BLE";
-  drawList("BLE DISCOVERY", bleLines, 0, "Scanning for 5 sec...");
-  NimBLEDevice::init("");
-  NimBLEScan* scan = NimBLEDevice::getScan();
-  scan->setScanCallbacks(&scanCallbacks, false);
-  scan->setActiveScan(true);
-  scan->setInterval(45);
-  scan->setWindow(15);
-  // NimBLE scanning runs asynchronously; keep the scan alive for the full window.
-  scan->start(5, false);
-  delay(5500);
-  scan->stop();
-  NimBLEDevice::deinit(true);
+  scan->clearResults();
   statusLine = bleCount ? "BLE SCAN COMPLETE" : "NO BLE DEVICES";
-  drawList("BLE DISCOVERY", bleLines, bleCount,
-           "None detected - retry");
+  drawList("BLE DISCOVERY", bleLines, bleCount, "None detected - retry");
 }
 void drawAbout() {
   drawHeader("ABOUT / LIMITS");
@@ -122,6 +120,7 @@ void setup() {
   M5Cardputer.Display.setTextSize(1);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
+  NimBLEDevice::init("");
   drawHome();
 }
 void loop() {
